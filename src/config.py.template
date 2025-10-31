@@ -1,0 +1,9 @@
+# Trello API credentials
+# Copy this file to config.py and fill in your credentials
+TRELLO_API_KEY = "your-api-key-here"
+TRELLO_API_TOKEN = "your-api-token-here"
+
+# Test configuration
+DEFAULT_BOARD_NAME = "Droxi"
+MAX_EMAILS_TO_CHECK = 50
+
