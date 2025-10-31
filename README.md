@@ -1,249 +1,150 @@
 # Gmail-Trello Sync Automation
 
-QA Automation project for testing Gmail-Trello synchronization using Python and Playwright.
+Python Playwright automation project for testing Gmail-Trello synchronization.
 
-## 📁 Project Structure
+## Project Structure
 
 ```
-python-playwright/
-├── src/
-│   ├── models.py           # Data classes (Email, TrelloCard)
-│   ├── config.py           # Configuration constants (create from template)
-│   ├── clients/
-│   │   ├── gmail_client.py     # Gmail API client
-│   │   └── trello_client.py    # Trello API client
-│   └── pages/
-│       └── trello_page.py      # Trello UI page objects (Playwright)
-├── tests/
-│   ├── test_sync.py        # Main API test suite
-│   └── test_trello_ui.py   # UI tests using Playwright
-├── main.py                 # Gmail authentication
-├── requirements.txt        # Python dependencies
-└── pytest.ini             # Pytest configuration
+src/
+├── models.py              # Data models (Email, TrelloCard)
+├── config.py              # Configuration (create from template)
+├── clients/
+│   ├── gmail_client.py    # Gmail API client
+│   └── trello_client.py   # Trello API client
+└── pages/
+    └── trello_page.py     # Playwright page objects
+
+tests/
+├── test_sync.py           # API tests
+└── test_trello_ui.py      # UI tests (Playwright)
 ```
 
-## 🚀 Setup
+## Setup
 
 ### Prerequisites
 
--   Python 3.8 or higher
--   Gmail account with API access
--   Trello account with API credentials
+-   Python 3.8+
+-   Gmail API credentials
+-   Trello API credentials
 
-### Installation Steps
+### Installation
 
-1. **Clone the repository**
+1. Clone repository
 
     ```bash
     git clone <repository-url>
     cd python-playwright
     ```
 
-2. **Create a virtual environment** (recommended)
+2. Create virtual environment
 
     ```bash
     python -m venv venv
-
-    # On Windows
-    venv\Scripts\activate
-
-    # On macOS/Linux
-    source venv/bin/activate
+    venv\Scripts\activate      # Windows
+    source venv/bin/activate   # Linux/Mac
     ```
 
-3. **Install dependencies**
+3. Install dependencies
 
     ```bash
     pip install -r requirements.txt
-    ```
-
-4. **Install Playwright browsers**
-
-    ```bash
     playwright install
     ```
 
-5. **Configure Gmail API credentials**
+4. Configure Gmail API
 
-    - Download OAuth 2.0 credentials from [Google Cloud Console](https://console.cloud.google.com/)
-    - Save the credentials file as `credentials.json` in the project root
-    - On first run, the script will open a browser for authentication and create `token.json`
+    - Download OAuth credentials from [Google Cloud Console](https://console.cloud.google.com/)
+    - Save as `credentials.json` in project root
+    - First run will create `token.json` automatically
 
-6. **Configure Trello API credentials**
-    - Copy the template file:
-        ```bash
-        cp src/config.py.template src/config.py
-        ```
-    - Edit `src/config.py` and add your Trello credentials:
-        - Get your API key from: https://trello.com/app-key
-        - Generate an API token from: https://trello.com/1/authorize?expiration=never&scope=read,write&response_type=token&name=Trello%20API&key=YOUR_API_KEY
-        - Update `TRELLO_API_KEY` and `TRELLO_API_TOKEN` in `src/config.py`
+5. Configure Trello API
+    ```bash
+    cp src/config.py.template src/config.py
+    ```
+    - Edit `src/config.py` with your credentials:
+        - API Key: https://trello.com/app-key
+        - API Token: https://trello.com/1/authorize?expiration=never&scope=read,write&response_type=token&name=Trello%20API&key=YOUR_API_KEY
 
-## 📦 Dependencies
+## Dependencies
 
-The following Python packages are required:
+-   google-api-python-client
+-   google-auth-httplib2
+-   google-auth-oauthlib
+-   pytest
+-   requests
+-   pytest-playwright
+-   playwright
 
-```
-google-api-python-client      # Gmail API client
-google-auth-httplib2         # Google authentication
-google-auth-oauthlib         # OAuth 2.0 flow
-pytest                       # Testing framework
-requests                     # HTTP library for Trello API
-pytest-playwright            # Playwright plugin for pytest
-playwright                   # Browser automation
-```
+Install: `pip install -r requirements.txt`
 
-Install all dependencies with:
+## Configuration
 
-```bash
-pip install -r requirements.txt
-```
+### Gmail
 
-## 🔧 Environment Variables and Configuration
+-   `credentials.json` - OAuth credentials (not in git)
+-   `token.json` - Auto-generated access token (not in git)
 
-### Gmail API Setup
+### Trello
 
-1. **OAuth Credentials**: Place `credentials.json` in the project root directory
-
-    - This file contains your OAuth 2.0 client ID and secret
-    - Never commit this file to version control
-
-2. **Access Token**: The `token.json` file will be created automatically after first authentication
-    - This file stores your access and refresh tokens
-    - Never commit this file to version control
-
-### Trello API Setup
-
-Edit `src/config.py` with your Trello credentials:
+Edit `src/config.py`:
 
 ```python
-TRELLO_API_KEY = "your-api-key-here"
-TRELLO_API_TOKEN = "your-api-token-here"
-DEFAULT_BOARD_NAME = "Droxi"  # Name of your Trello board
-MAX_EMAILS_TO_CHECK = 50       # Maximum emails to process
+TRELLO_API_KEY = "your-key"
+TRELLO_API_TOKEN = "your-token"
+DEFAULT_BOARD_NAME = "Droxi"
+MAX_EMAILS_TO_CHECK = 50
 ```
 
-## 🧪 Running Tests
+## Running Tests
 
-### Run All Tests
+Run all tests:
 
 ```bash
 python -m pytest tests/ -v -s
 ```
 
-### Run API Tests Only
+Run specific suite:
 
 ```bash
-python -m pytest tests/test_sync.py -v -s
+python -m pytest tests/test_sync.py -v -s          # API tests
+python -m pytest tests/test_trello_ui.py -v -s      # UI tests
+python -m pytest tests/test_trello_ui.py --headed   # UI with browser
 ```
 
-### Run UI Tests Only (Playwright)
+Run specific test:
 
 ```bash
-python -m pytest tests/test_trello_ui.py -v -s
+python -m pytest tests/test_sync.py::test_trello_connection -v
 ```
 
-### Run Specific Test
+## Tests
 
-```bash
-python -m pytest tests/test_sync.py::test_trello_connection -v -s
-python -m pytest tests/test_sync.py::test_gmail_connection -v -s
-python -m pytest tests/test_sync.py::test_urgent_emails_sync -v -s
-```
+-   `test_trello_connection()` - Trello API access
+-   `test_gmail_connection()` - Gmail API access
+-   `test_urgent_emails_sync()` - Urgent emails have Urgent label in Trello
+-   `test_email_merging()` - Duplicate subject emails merge into one card
 
-### Run with Playwright UI Mode (Interactive)
+## Troubleshooting
 
-```bash
-python -m pytest tests/test_trello_ui.py --headed -v
-```
+**Gmail authentication fails:**
 
-## 📋 Test Coverage
+-   Verify `credentials.json` exists in project root
+-   Delete `token.json` and re-authenticate
+-   Ensure Gmail API is enabled in Google Cloud Console
 
-### Connection Tests
+**Trello API errors:**
 
--   `test_trello_connection()` - Verifies Trello API access
--   `test_gmail_connection()` - Verifies Gmail API access
+-   Check API key and token in `src/config.py`
+-   Board name must match exactly (case-sensitive)
+-   Verify API rate limits
 
-### Requirement 1: Urgent Emails Sync
+**Playwright issues:**
 
--   `test_urgent_emails_sync()` - Validates that emails with "Urgent" in body have Trello cards with "Urgent" label
+-   Run `playwright install`
+-   Use `--headed` flag to debug browser issues
 
-### Requirement 2: Email Merging
+## Notes
 
--   `test_email_merging()` - Validates that duplicate subject emails are merged into one Trello card
-
-## 📚 Usage Examples
-
-### Using Gmail Client
-
-```python
-from main import gmail_login
-from src.clients.gmail_client import GmailClient
-
-# Authenticate
-creds = gmail_login()
-gmail = GmailClient(creds)
-
-# Get urgent emails
-urgent_emails = gmail.get_urgent_emails()
-
-# Get emails grouped by subject
-grouped = gmail.get_emails_grouped_by_subject()
-```
-
-### Using Trello Client
-
-```python
-from src.clients.trello_client import TrelloClient
-from src.config import TRELLO_API_KEY, TRELLO_API_TOKEN
-
-trello = TrelloClient(TRELLO_API_KEY, TRELLO_API_TOKEN)
-
-# Get all boards
-boards = trello.get_boards()
-
-# Get cards from a board
-cards = trello.get_cards("Droxi")
-
-# Find specific card
-card = trello.find_card_by_name("Droxi", "Card Title")
-```
-
-### Using Playwright for UI Tests
-
-```python
-from playwright.sync_api import Page
-from src.pages.trello_page import TrelloPage
-
-def test_trello_ui(page: Page):
-    trello_page = TrelloPage(page)
-    trello_page.navigate_to_board("Droxi")
-    cards = trello_page.get_card_titles()
-    assert len(cards) > 0
-```
-
-## 🛠️ Troubleshooting
-
-### Gmail Authentication Issues
-
--   Ensure `credentials.json` is in the project root
--   Delete `token.json` and re-authenticate if tokens expire
--   Check that Gmail API is enabled in Google Cloud Console
-
-### Trello API Issues
-
--   Verify API key and token in `src/config.py`
--   Ensure the board name matches exactly (case-sensitive)
--   Check Trello API rate limits
-
-### Playwright Issues
-
--   Run `playwright install` to ensure browsers are installed
--   Use `--headed` flag to see the browser during tests
--   Check browser installation with `playwright --version`
-
-## 📝 Notes
-
--   The `token.json` and `credentials.json` files are excluded from version control (see `.gitignore`)
--   Always use `src/config.py.template` as a reference - never commit your actual `src/config.py` with real credentials
--   Playwright tests require browser installation via `playwright install`
+-   `credentials.json`, `token.json`, and `src/config.py` are excluded from git
+-   Use `src/config.py.template` as reference only
+-   Never commit real credentials
