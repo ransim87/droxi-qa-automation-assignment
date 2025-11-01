@@ -25,8 +25,6 @@ def page(browser):
 @pytest.fixture
 def trello_pages(page):
     """Setup Trello pages and login."""
-    if os.getenv("CI", "false").lower() == "true":
-        pytest.skip("UI tests are skipped in CI due to MFA requirements")
     
     login_page = TrelloLoginPage(page)
     board_page = TrelloBoardPage(page)
