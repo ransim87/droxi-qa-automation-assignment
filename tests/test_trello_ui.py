@@ -19,6 +19,19 @@ def browser():
 @pytest.fixture(scope="function")
 def page(browser):
     page = browser.new_page()
+    
+    # Try to load saved browser context if available (for CI with pre-authenticated session)
+    context_file = os.getenv("BROWSER_CONTEXT_FILE")
+    if context_file and os.path.exists(context_file):
+        try:
+            import json
+            with open(context_file, 'r') as f:
+                cookies = json.load(f)
+                if cookies:
+                    page.context.add_cookies(cookies)
+        except:
+            pass
+    
     yield page
 
 
