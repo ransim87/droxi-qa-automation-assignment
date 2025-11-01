@@ -63,59 +63,29 @@ class TrelloLoginPage:
         self.page = page
     
     def login(self, email, password):
-        # Check if already logged in
+        self.page.wait_for_timeout(2000)
+        
+        # Check if already logged in and on the board
         if "/b/2GzdgPlw/droxi" in self.page.url:
-            self.page.wait_for_timeout(1000)
             return
         
+        # Handle "Sign up" popup
         if "Sign up to see this board" in self.page.content():
             self.page.click(self.BUTTON_ALREADY_HAVE_ACCOUNT)
             self.page.wait_for_timeout(2000)
         
-        if "login" in self.page.url or "atlassian.com" in self.page.url:
-            try:
-                self.page.fill(self.INPUT_EMAIL, email)
-                self.page.click(self.BUTTON_CONTINUE)
-                self.page.wait_for_selector(self.INPUT_PASSWORD, timeout=5000)
-                self.page.fill(self.INPUT_PASSWORD, password)
-                self.page.click(self.BUTTON_LOGIN)
-                
-                # Wait for navigation with polling - check URL every 2 seconds
-                max_attempts = 15  # 15 attempts * 2 seconds = 30 seconds max
-                for attempt in range(max_attempts):
-                    self.page.wait_for_timeout(2000)
-                    current_url = self.page.url
-                    
-                    # Success - we're on the board
-                    if "/b/2GzdgPlw/droxi" in current_url:
-                        self.page.wait_for_timeout(1500)
-                        return
-                    
-                    # MFA page detected
-                    if "mfa" in current_url.lower() or "atlassian.com/login/mfa" in current_url:
-                        # Wait a bit longer - sometimes MFA has delays
-                        self.page.wait_for_timeout(5000)
-                        current_url = self.page.url
-                        if "/b/2GzdgPlw/droxi" in current_url:
-                            return
-                        raise Exception(
-                            "Login blocked by MFA: Trello requires Multi-Factor Authentication. "
-                            "For CI automation, please use an account without MFA or configure "
-                            "an app-specific password if available."
-                        )
-                
-                # Final check after all attempts
-                if "/b/2GzdgPlw/droxi" not in self.page.url:
-                    raise Exception(f"Login timeout - final URL: {self.page.url}")
-                    
-            except Exception as e:
-                current_url = self.page.url
-                if "mfa" in current_url.lower():
-                    raise Exception(
-                        "Login blocked by MFA: Trello requires Multi-Factor Authentication. "
-                        "MFA cannot be automated in CI environments."
-                    ) from e
-                raise
+        # Fill email and continue
+        self.page.fill(self.INPUT_EMAIL, email)
+        self.page.click(self.BUTTON_CONTINUE)
+        self.page.wait_for_selector(self.INPUT_PASSWORD, timeout=10000)
+        
+        # Fill password and login
+        self.page.fill(self.INPUT_PASSWORD, password)
+        self.page.click(self.BUTTON_LOGIN)
+        
+        # Wait for navigation to board
+        self.page.wait_for_url("**/droxi", timeout=30000)
+        self.page.wait_for_timeout(2000)
 
 
 class TrelloBoardPage:
