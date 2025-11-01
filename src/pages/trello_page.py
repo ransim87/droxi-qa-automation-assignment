@@ -54,7 +54,6 @@ def _find_status_in_text(text):
 class TrelloLoginPage:
     # Locators
     BUTTON_ALREADY_HAVE_ACCOUNT = "button:has-text('Already have an account? Log in')"
-    LINK_LOGIN = "a:has-text('Log in'), button:has-text('Log in')"
     INPUT_EMAIL = "input[type='email']"
     BUTTON_CONTINUE = "button:has-text('Continue')"
     INPUT_PASSWORD = "input[type='password']"
@@ -71,58 +70,22 @@ class TrelloLoginPage:
             return
         
         # Handle "Sign up" popup
-        try:
-            if "Sign up to see this board" in self.page.content():
-                self.page.click(self.BUTTON_ALREADY_HAVE_ACCOUNT)
-                self.page.wait_for_timeout(2000)
-        except:
-            pass
+        if "Sign up to see this board" in self.page.content():
+            self.page.click(self.BUTTON_ALREADY_HAVE_ACCOUNT)
+            self.page.wait_for_timeout(2000)
         
-        # Click "Log in" button/link if visible (opens the login form)
-        try:
-            login_link = self.page.locator(self.LINK_LOGIN).first
-            if login_link.is_visible(timeout=3000):
-                login_link.click()
-                self.page.wait_for_timeout(2000)
-        except:
-            pass  # Maybe login form is already open
+        # Fill email and continue
+        self.page.fill(self.INPUT_EMAIL, email)
+        self.page.click(self.BUTTON_CONTINUE)
+        self.page.wait_for_selector(self.INPUT_PASSWORD, timeout=10000)
         
-        # Wait for and fill email if needed
-        try:
-            email_input = self.page.wait_for_selector(self.INPUT_EMAIL, timeout=10000)
-            if email_input.is_visible():
-                self.page.fill(self.INPUT_EMAIL, email)
-                self.page.click(self.BUTTON_CONTINUE)
-                self.page.wait_for_timeout(2000)
-        except:
-            # Maybe already past email step
-            pass
+        # Fill password and login
+        self.page.fill(self.INPUT_PASSWORD, password)
+        self.page.click(self.BUTTON_LOGIN)
         
-        # Wait for and fill password
-        try:
-            password_input = self.page.wait_for_selector(self.INPUT_PASSWORD, timeout=10000)
-            if password_input.is_visible():
-                self.page.fill(self.INPUT_PASSWORD, password)
-                self.page.click(self.BUTTON_LOGIN)
-                self.page.wait_for_timeout(2000)
-        except Exception as e:
-            # Check if we're already logged in
-            if "/b/2GzdgPlw/droxi" in self.page.url:
-                return
-            raise Exception(f"Failed to fill password: {e}")
-        
-        # Wait for navigation to board - poll for URL change
-        max_wait = 30
-        for _ in range(max_wait):
-            self.page.wait_for_timeout(1000)
-            current_url = self.page.url
-            if "/b/2GzdgPlw/droxi" in current_url:
-                self.page.wait_for_timeout(2000)
-                return
-        
-        # Final check
-        if "/b/2GzdgPlw/droxi" not in self.page.url:
-            raise Exception(f"Login failed - still on: {self.page.url}")
+        # Wait for navigation to board
+        self.page.wait_for_url("**/droxi", timeout=30000)
+        self.page.wait_for_timeout(2000)
 
 
 class TrelloBoardPage:
