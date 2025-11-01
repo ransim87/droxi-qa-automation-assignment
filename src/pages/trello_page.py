@@ -73,7 +73,20 @@ class TrelloLoginPage:
             self.page.wait_for_selector(self.INPUT_PASSWORD)
             self.page.fill(self.INPUT_PASSWORD, password)
             self.page.click(self.BUTTON_LOGIN)
-            self.page.wait_for_url("**/b/2GzdgPlw/droxi**", timeout=10000)
+            
+            # Wait for navigation, but check for MFA page
+            try:
+                self.page.wait_for_url("**/b/2GzdgPlw/droxi**", timeout=10000)
+            except Exception as e:
+                # Check if we're on MFA page
+                current_url = self.page.url
+                if "mfa" in current_url.lower() or "atlassian.com/login/mfa" in current_url:
+                    raise Exception(
+                        "Login failed: Trello requires Multi-Factor Authentication (MFA). "
+                        "MFA cannot be automated in CI. Please disable MFA for this account "
+                        "or use an app-specific password."
+                    ) from e
+                raise
             self.page.wait_for_timeout(1500)
 
 
