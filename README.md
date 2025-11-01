@@ -58,12 +58,14 @@ tests/
     - First run will create `token.json` automatically
 
 5. Configure Trello API
+   Create a `.env` file in the project root:
     ```bash
-    cp src/config.py.template src/config.py
+    TRELLO_API_KEY=your-api-key-here
+    TRELLO_API_TOKEN=your-api-token-here
     ```
-    - Edit `src/config.py` with your credentials:
-        - API Key: https://trello.com/app-key
-        - API Token: https://trello.com/1/authorize?expiration=never&scope=read,write&response_type=token&name=Trello%20API&key=YOUR_API_KEY
+    - Get your API Key: https://trello.com/app-key
+    - Get your API Token: https://trello.com/1/authorize?expiration=never&scope=read,write&response_type=token&name=Trello%20API&key=YOUR_API_KEY
+    - The `.env` file is automatically ignored by git
 
 ## Dependencies
 
@@ -143,8 +145,24 @@ python -m pytest tests/test_sync.py::test_trello_connection -v
 -   Run `playwright install`
 -   Use `--headed` flag to debug browser issues
 
+## GitHub Actions
+
+Automated tests run on push and pull requests via GitHub Actions.
+
+### Required Secrets
+
+Configure these secrets in your GitHub repository settings (Settings → Secrets and variables → Actions):
+
+-   `TRELLO_API_KEY` - Your Trello API key
+-   `TRELLO_API_TOKEN` - Your Trello API token
+-   `TRELLO_EMAIL` - Trello account email for UI tests
+-   `TRELLO_PASSWORD` - Trello account password for UI tests
+
+The workflow runs tests on Python 3.10, 3.11, and 3.12.
+
 ## Notes
 
--   `credentials.json`, `token.json`, and `src/config.py` are excluded from git
--   Use `src/config.py.template` as reference only
+-   `credentials.json`, `token.json`, and `.env` are excluded from git
 -   Never commit real credentials
+-   Tests run in headless mode in CI automatically
+-   Create a `.env` file for local development (see setup instructions above)
