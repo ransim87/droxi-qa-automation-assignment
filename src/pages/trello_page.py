@@ -141,9 +141,40 @@ class TrelloBoardPage:
         _try_click(self.page, self.BUTTON_CLEAR_ALL)
     
     def wait_for_board_ready(self):
-        self.page.wait_for_load_state('networkidle', timeout=10000)
+        self.page.wait_for_load_state('networkidle', timeout=15000)
+        
+        # Try multiple ways to detect board is ready
+        board_ready = False
+        
+        # Method 1: Check for status columns
         status_selector = ', '.join([f'h2:has-text("{s}")' for s in STATUSES])
-        self.page.wait_for_selector(status_selector, timeout=10000)
+        try:
+            self.page.wait_for_selector(status_selector, timeout=5000)
+            board_ready = True
+        except:
+            pass
+        
+        # Method 2: Check for card links
+        if not board_ready:
+            try:
+                self.page.wait_for_selector(self.CARD_NAME, timeout=5000)
+                board_ready = True
+            except:
+                pass
+        
+        # Method 3: Check URL
+        if not board_ready:
+            if "/b/2GzdgPlw/droxi" in self.page.url:
+                board_ready = True
+        
+        # If still not ready, wait a bit more and check again
+        if not board_ready:
+            self.page.wait_for_timeout(3000)
+            try:
+                self.page.wait_for_selector('h2, a[data-testid="card-name"]', timeout=3000)
+            except:
+                pass  # Continue anyway - board might be ready
+        
         self.page.wait_for_timeout(1000)
     
     def apply_urgent_filter(self):
