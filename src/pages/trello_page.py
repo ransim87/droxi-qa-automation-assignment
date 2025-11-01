@@ -70,22 +70,43 @@ class TrelloLoginPage:
             return
         
         # Handle "Sign up" popup
-        if "Sign up to see this board" in self.page.content():
-            self.page.click(self.BUTTON_ALREADY_HAVE_ACCOUNT)
+        try:
+            if "Sign up to see this board" in self.page.content():
+                self.page.click(self.BUTTON_ALREADY_HAVE_ACCOUNT)
+                self.page.wait_for_timeout(2000)
+        except:
+            pass
+        
+        # Wait for and fill email if needed
+        try:
+            email_input = self.page.wait_for_selector(self.INPUT_EMAIL, timeout=10000)
+            if email_input.is_visible():
+                self.page.fill(self.INPUT_EMAIL, email)
+                self.page.click(self.BUTTON_CONTINUE)
+                self.page.wait_for_timeout(2000)
+        except:
+            # Maybe already past email step
+            pass
+        
+        # Wait for and fill password
+        password_input = self.page.wait_for_selector(self.INPUT_PASSWORD, timeout=10000)
+        if password_input.is_visible():
+            self.page.fill(self.INPUT_PASSWORD, password)
+            self.page.click(self.BUTTON_LOGIN)
             self.page.wait_for_timeout(2000)
         
-        # Fill email and continue
-        self.page.fill(self.INPUT_EMAIL, email)
-        self.page.click(self.BUTTON_CONTINUE)
-        self.page.wait_for_selector(self.INPUT_PASSWORD, timeout=10000)
+        # Wait for navigation to board - poll for URL change
+        max_wait = 30
+        for _ in range(max_wait):
+            self.page.wait_for_timeout(1000)
+            current_url = self.page.url
+            if "/b/2GzdgPlw/droxi" in current_url:
+                self.page.wait_for_timeout(2000)
+                return
         
-        # Fill password and login
-        self.page.fill(self.INPUT_PASSWORD, password)
-        self.page.click(self.BUTTON_LOGIN)
-        
-        # Wait for navigation to board
-        self.page.wait_for_url("**/droxi", timeout=30000)
-        self.page.wait_for_timeout(2000)
+        # Final check
+        if "/b/2GzdgPlw/droxi" not in self.page.url:
+            raise Exception(f"Login failed - still on: {self.page.url}")
 
 
 class TrelloBoardPage:
