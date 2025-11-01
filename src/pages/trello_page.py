@@ -63,29 +63,18 @@ class TrelloLoginPage:
         self.page = page
     
     def login(self, email, password):
-        self.page.wait_for_timeout(2000)
-        
-        # Check if already logged in and on the board
-        if "/b/2GzdgPlw/droxi" in self.page.url:
-            return
-        
-        # Handle "Sign up" popup
         if "Sign up to see this board" in self.page.content():
             self.page.click(self.BUTTON_ALREADY_HAVE_ACCOUNT)
-            self.page.wait_for_timeout(2000)
+            self.page.wait_for_timeout(1500)
         
-        # Fill email and continue
-        self.page.fill(self.INPUT_EMAIL, email)
-        self.page.click(self.BUTTON_CONTINUE)
-        self.page.wait_for_selector(self.INPUT_PASSWORD, timeout=10000)
-        
-        # Fill password and login
-        self.page.fill(self.INPUT_PASSWORD, password)
-        self.page.click(self.BUTTON_LOGIN)
-        
-        # Wait for navigation to board
-        self.page.wait_for_url("**/droxi", timeout=30000)
-        self.page.wait_for_timeout(2000)
+        if "login" in self.page.url:
+            self.page.fill(self.INPUT_EMAIL, email)
+            self.page.click(self.BUTTON_CONTINUE)
+            self.page.wait_for_selector(self.INPUT_PASSWORD)
+            self.page.fill(self.INPUT_PASSWORD, password)
+            self.page.click(self.BUTTON_LOGIN)
+            self.page.wait_for_url("**/b/2GzdgPlw/droxi**", timeout=10000)
+            self.page.wait_for_timeout(1500)
 
 
 class TrelloBoardPage:
