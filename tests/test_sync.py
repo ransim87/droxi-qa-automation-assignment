@@ -1,13 +1,18 @@
+import os
 import pytest
 from main import gmail_login
 from src.clients.gmail_client import GmailClient
 from src.clients.trello_client import TrelloClient
 from src.config import TRELLO_API_KEY, TRELLO_API_TOKEN, DEFAULT_BOARD_NAME
 
-
 @pytest.fixture(scope="module")
 def gmail_client():
-    return GmailClient(gmail_login())
+    if not os.path.exists("credentials.json"):
+        pytest.skip("credentials.json not found - Gmail tests require Gmail credentials")
+    try:
+        return GmailClient(gmail_login())
+    except FileNotFoundError:
+        pytest.skip("credentials.json not found - Gmail tests require Gmail credentials")
 
 
 @pytest.fixture(scope="module")
