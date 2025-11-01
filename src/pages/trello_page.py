@@ -54,6 +54,7 @@ def _find_status_in_text(text):
 class TrelloLoginPage:
     # Locators
     BUTTON_ALREADY_HAVE_ACCOUNT = "button:has-text('Already have an account? Log in')"
+    LINK_LOGIN = "a:has-text('Log in'), button:has-text('Log in')"
     INPUT_EMAIL = "input[type='email']"
     BUTTON_CONTINUE = "button:has-text('Continue')"
     INPUT_PASSWORD = "input[type='password']"
@@ -77,6 +78,15 @@ class TrelloLoginPage:
         except:
             pass
         
+        # Click "Log in" button/link if visible (opens the login form)
+        try:
+            login_link = self.page.locator(self.LINK_LOGIN).first
+            if login_link.is_visible(timeout=3000):
+                login_link.click()
+                self.page.wait_for_timeout(2000)
+        except:
+            pass  # Maybe login form is already open
+        
         # Wait for and fill email if needed
         try:
             email_input = self.page.wait_for_selector(self.INPUT_EMAIL, timeout=10000)
@@ -89,11 +99,17 @@ class TrelloLoginPage:
             pass
         
         # Wait for and fill password
-        password_input = self.page.wait_for_selector(self.INPUT_PASSWORD, timeout=10000)
-        if password_input.is_visible():
-            self.page.fill(self.INPUT_PASSWORD, password)
-            self.page.click(self.BUTTON_LOGIN)
-            self.page.wait_for_timeout(2000)
+        try:
+            password_input = self.page.wait_for_selector(self.INPUT_PASSWORD, timeout=10000)
+            if password_input.is_visible():
+                self.page.fill(self.INPUT_PASSWORD, password)
+                self.page.click(self.BUTTON_LOGIN)
+                self.page.wait_for_timeout(2000)
+        except Exception as e:
+            # Check if we're already logged in
+            if "/b/2GzdgPlw/droxi" in self.page.url:
+                return
+            raise Exception(f"Failed to fill password: {e}")
         
         # Wait for navigation to board - poll for URL change
         max_wait = 30
